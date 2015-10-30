@@ -4,19 +4,27 @@
 
 """ Allow any django app to handle SMS-MO, SMS-MT using the Orange API. """
 
+from codecs import open
+
 from setuptools import setup
+
+with open('README.rst', 'r', 'utf-8') as f:
+    readme = f.read()
 
 setup(
     name='orangeapisms',
-    version='0.2',
+    version='0.5',
     description='Django app to add support for Orange API SMS-MO, SMS-MT',
-    long_description=open('README.md', 'r').read(),
+    long_description=readme,
     author='renaud gaudin',
     author_email='rgaudin@gmail.com',
     url='http://github.com/rgaudin/django-orangeapisms',
     packages=['orangeapisms'],
     zip_safe=False,
     platforms='any',
+    include_package_data=True,
+    package_data={'': ['README.rst', 'LICENSE']},
+    package_dir={'orangeapisms': 'orangeapisms'},
     install_requires=[
         'Django >= 1.8.5',
         'django-forms-bootstrap >= 3.0.1',
