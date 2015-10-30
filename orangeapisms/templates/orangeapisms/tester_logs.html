@@ -1,0 +1,11 @@
+{% extends "orangeapisms/base.html" %}
+
+{% block content %}
+<table class="table ">
+	<thead><tr><th>UUID</th><th>Type</th><th>On</th><th>Identity</th><th>Status</th><th>Content</th></tr></thead>
+	{% for msg in messages_log %}
+	<tr><td>{{ msg.suuid }}</td><td>{{ msg.sms_type_verbose }}</td><td>{{ msg.created_on }}</td><td>{{ msg.identity }}</td><td>{{ msg.status_verbose }}</td><td>{{ msg.content }}</td></tr>
+	{% endfor %}
+</table>
+{% include "orangeapisms/paginator.html" with cursor=messages_log %}
+{% endblock %}

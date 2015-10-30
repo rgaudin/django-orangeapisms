@@ -1,0 +1,8 @@
+*.log
+*.pot
+*.pyc
+local_settings.py
+dist/
+*.egg-info/
+__pycache__
+.DS_Store

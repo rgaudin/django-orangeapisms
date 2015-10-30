@@ -1,0 +1,15 @@
+<nav>
+  <ul class="pagination">
+  	{% if cursor.has_previous %}
+    <li><a href="?page={{ cursor.previous_page_number }}" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>
+    {% endif %}
+
+    {% for page_num in cursor.paginator.page_range %}
+    <li{% if page_num = cursor.number %} class="active"{% endif %}><a href="?page={{ page_num }}">{{ page_num }}</a></li>
+    {% endfor %}
+    
+    {% if cursor.has_next %}
+    <li><a href="?page={{ cursor.next_page_number }}" aria-label="Next"><span aria-hidden="true">&raquo;</span></a></li>
+    {% endif %}
+  </ul>
+</nav>

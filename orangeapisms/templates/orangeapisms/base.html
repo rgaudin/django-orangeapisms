@@ -1,0 +1,55 @@
+{% load bootstrap_tags %}
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<title>Orange API SMS</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+	</head>
+    <body>
+		<div class="container">
+			{% if messages %}
+			<div class="row">
+	            <div id="notifications">
+	            {% for message in messages %}
+	                <p class="alert alert-dismissible alert-{% if message.tags == 'error'%}danger{% else %}{{ message.tags }}{% endif %}" role="alert">{{ message|linebreaksbr }}<button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
+				</button></p>
+	            {% endfor %}
+	            </div>
+	        </div>
+            {% endif %}
+			<div class="row">
+				<h1>Orange API SMS</h1>
+				{% if not disable_tester %}
+				<ul class="nav nav-tabs">
+					<li {% if page = 'home' %}class="active"{% endif %}><a href="{% url 'oapisms_home' %}">Home</a></li>
+					<li {% if page = 'smsmt' %}class="active"{% endif %}><a href="{% url 'oapisms_tester_smsmt' %}">Send SMS-MT</a></li>
+					<li {% if page = 'fsmsmt' %}class="active"{% endif %}><a href="{% url 'oapisms_tester_fsmsmt' %}" >Fake SMS-MT</a></li>
+					<li {% if page = 'fsmsmo' %}class="active"{% endif %}><a href="{% url 'oapisms_tester_fsmsmo' %}" >Fake SMS-MO</a></li>
+					<li {% if page = 'fsmsdr' %}class="active"{% endif %}><a href="{% url 'oapisms_tester_fsmsdr' %}" >Fake SMS-MT DR</a></li>
+					<li {% if page = 'logs' %}class="active"{% endif %}><a href="{% url 'oapisms_tester_logs' %}">SMS Logs</a></li>
+				</ul>
+				{% else %}
+				<hr />
+				{% endif %}
+			</div>
+			<div class="row">
+				{% block content %}{% endblock %}
+			</div>
+			{% if not messages %}
+			{% if success != None or feedback != None %}
+			<div class="row">
+			<hr />
+			<div class="alert alert-{% if success %}success{% else %}warning{% endif %}">
+			<p><strong>{% if success %}SUCCESS{% else %}FAILURE{% endif %}</strong>: {{ feedback }}</p>
+			</div>
+			</div>
+			{% endif %}
+			{% endif %}
+		</div>
+	</body>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+</html>
