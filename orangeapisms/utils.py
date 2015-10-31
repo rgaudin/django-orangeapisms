@@ -45,12 +45,9 @@ def do_submit_sms_mt_request(payload, message=None):
 
     actual submission of API request for SMS-MT '''
     def update_status(msg, success):
-        print("updating status for {}: {}".format(msg, success))
         if msg is None:
-            print("msg is none")
             return
         msg.update_status(msg.SENT if success else msg.FAILED_TO_SEND)
-        print("updated status for {}".format(msg))
         return success
 
     url = "{api}/outbound/{addr}/requests".format(
@@ -64,13 +61,11 @@ def do_submit_sms_mt_request(payload, message=None):
     req = requests.post(url, headers=headers, json=payload)
     resp = req.json()
     if "resourceReference" not in resp.keys():
-        print("bad as no resourceReference")
         return update_status(message, False)
 
     if message is not None:
         message.update_reference(
             resp['resourceReference']['resourceURL'].rsplit('/', 1)[-1])
-        print("is good")
         return update_status(message, True)
     return "resourceReference" in resp.keys()
 

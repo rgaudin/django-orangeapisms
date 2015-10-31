@@ -6,20 +6,20 @@
 
 from codecs import open
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 with open('README.rst', 'r', 'utf-8') as f:
     readme = f.read()
 
 setup(
     name='orangeapisms',
-    version='0.5',
+    version='0.8',
     description='Django app to add support for Orange API SMS-MO, SMS-MT',
     long_description=readme,
     author='renaud gaudin',
     author_email='rgaudin@gmail.com',
     url='http://github.com/rgaudin/django-orangeapisms',
-    packages=['orangeapisms'],
+    packages=find_packages('.'),
     zip_safe=False,
     platforms='any',
     include_package_data=True,
