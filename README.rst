@@ -7,9 +7,9 @@ Install
 --------
 
 * `pip install orangeapisms`
-* Edit your `settings.py` file and add: 
+* Add a JSON config file next to your `settings.py` file with name `orangeapi.json`: 
 
-.. code-block:: python
+.. code-block:: json
 
     ORANGE_API = {
         # python path to your module handling messages.
@@ -17,13 +17,17 @@ Install
         # whether to store SMS in DB (SMSMessage Model)
         'use_db': True,
         # URL of your API (might change depending on your plan)
-        'smsmt_url': 'https://api.sdp.orange.com/smsmessaging/v1',
+        'smsmt_url': 'https://api.orange.com/smsmessaging/v1',
+        # OAuth URL for Orange API
+        'oauth_url': 'https://api.orange.com/oauth/v2',
         # Your subscribed phone number)
-        'sender_address': '+9912345',
+        'sender_address': '+22300000',
         # Your custom sender name (can be number or string)
         'sender_name': "POTUS",
-        # Your API token for this App
-        'token': 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+        # Your Client ID
+        'client_id': 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+        # Your Client Secret
+        'client_id': 'xxxxxxxxxxxxxxxx',
         # To enable tester & logs WebUI on /oapi/
         'enable_tester': True,
         # What to use as default sender name
