@@ -129,16 +129,13 @@ def get_token():
 
 
 def request_token():
-    url = "{oauth_url}token".format(oauth_url=get_config('oauth_url'))
+    url = "{oauth_url}/token".format(oauth_url=get_config('oauth_url'))
     basic_header = base64.b64encode(
         "{client_id}:{client_secret}".format(
             client_id=get_config('client_id'),
             client_secret=get_config('client_secret')))
     headers = {'Authorization': "Basic {b64}".format(b64=basic_header)}
     payload = {'grant_type': 'client_credentials'}
-    from pprint import pprint as pp ; pp(headers)
-    from pprint import pprint as pp ; pp(payload)
-    from pprint import pprint as pp ; pp(url)
     req = requests.post(url, headers=headers, data=payload)
     resp = req.json()
     if "token_type" in resp:
