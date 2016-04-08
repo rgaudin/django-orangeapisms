@@ -13,7 +13,7 @@ with open('README.rst', 'r', 'utf-8') as f:
 
 setup(
     name='orangeapisms',
-    version='0.10',
+    version='0.11',
     description='Django app to add support for Orange API SMS-MO, SMS-MT',
     long_description=readme,
     author='renaud gaudin',
@@ -31,6 +31,7 @@ setup(
         'iso8601 >= 0.1.10',
         'pytz >= 2015.6',
         'requests >= 2.8.1',
+        'simplejson >= 3.8.2',
     ],
     classifiers=[
         'Development Status :: 4 - Beta',
