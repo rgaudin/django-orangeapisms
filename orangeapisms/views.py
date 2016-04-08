@@ -18,7 +18,8 @@ from django.contrib import messages
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from orangeapisms.models import SMSMessage
-from orangeapisms.utils import get_handler, datetime_to_iso, send_sms
+from orangeapisms.utils import get_handler, send_sms
+from orangeapisms.datetime import datetime_to_iso
 from orangeapisms.config import get_config
 
 logger = logging.getLogger(__name__)

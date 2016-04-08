@@ -13,7 +13,7 @@ from django.db import models
 from django.utils import timezone
 
 from orangeapisms.config import get_config
-
+from orangeapisms.datetime import datetime_from_iso
 
 logger = logging.getLogger(__name__)
 
@@ -132,7 +132,6 @@ class SMSMessage(models.Model):
 
     @classmethod
     def create_mo_from_payload(cls, payload):
-        from orangeapisms.utils import datetime_from_iso
         kwargs = {
             'direction': cls.INCOMING,
             'sms_type': cls.MO,
@@ -194,14 +193,11 @@ class SMSMessage(models.Model):
             setattr(self, k, v)
 
     def to_mt(self):
-        return {
-            "address": ["tel:{dest_addr}"
-                        .format(dest_addr=self.destination_address)],
-            "senderName": self.sender_address,
-            "message": self.content,
-            "callbackData": self.suuid,
-            "clientCorrelator": self.suuid,
-        }
+        from orangeapisms.utils import mt_payload
+        return mt_payload(dest_addr=self.destination_address,
+                          message=self.content,
+                          sender_address=get_config('sender_address'),
+                          sender_name=self.sender_address)
 
     @property
     def suuid(self):
