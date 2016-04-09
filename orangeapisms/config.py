@@ -45,7 +45,7 @@ DEFAULT_CONFIG = {
     'enable_tester': False,
     'default_sender_name': 'sender_address',
     'send_async': False,
-    'celery_app': None,
+    'celery_module': None,
 }
 
 CONFIG = build_config(DEFAULT_CONFIG, get_json_config())

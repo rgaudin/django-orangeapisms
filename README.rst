@@ -7,36 +7,40 @@ Install
 --------
 
 * `pip install orangeapisms`
-* Add a JSON config file next to your `settings.py` file with name `orangeapi.json`: 
+* Add `orangeapisms` it to your `settings.py` file:
+```INSTALLED_APPS = list(INSTALLED_APPS) + ['orangeapisms',
+                                             'django_forms_bootstrap']```
+* Setup Database with `./manage.py migrate`
+* Configure your `orangeapi.json` file (place it next to your `settings.py` file: 
 
 .. code-block:: json
 
-    ORANGE_API = {
-        # python path to your module handling messages.
-        'handler_module': 'orangeapisms.stub',
-        # whether to store SMS in DB (SMSMessage Model)
-        'use_db': True,
-        # URL of your API (might change depending on your plan)
-        'smsmt_url': 'https://api.orange.com/smsmessaging/v1',
-        # OAuth URL for Orange API
-        'oauth_url': 'https://api.orange.com/oauth/v2',
-        # Your subscribed phone number)
-        'sender_address': '+22300000',
-        # Your custom sender name (can be number or string)
-        'sender_name': "POTUS",
-        # Your Client ID
-        'client_id': 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-        # Your Client Secret
-        'client_id': 'xxxxxxxxxxxxxxxx',
-        # To enable tester & logs WebUI on /oapi/
-        'enable_tester': True,
-        # What to use as default sender name
-        'default_sender_name': 'sender_address'
+    {
+        "handler_module": "myapp.orange_handler",
+        "use_db": true,
+        "sender_address": "+22300000000",
+        "sender_name": "POTUS",
+        "client_id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "client_secret": "xxxxxxxxxxxxxxxx",
+        "enable_tester": true,
+        "default_sender_name": "sender_address"
      }
-    INSTALLED_APPS = list(INSTALLED_APPS) + ['orangeapisms',
-                                             'django_forms_bootstrap']
 
-* Setup Database with `./manage.py migrate`
+
+ JSON Key | Description
+------------ | -------------
+**client_id** | Your Client ID (mandatory)
+**client_secret** | Your Client Secret (mandatory)
+**handler_module** | python path to your module handling messages (mandatory)
+use_db | whether to store SMS in DB (SMSMessage Model)
+smsmt_url | URL of your API (might change depending on your plan)
+oauth_url | OAuth URL for Orange API
+sender_address | Your subscribed phone number
+sender_name | Your custom sender name (can be number or string)
+enable_tester | To enable tester & logs WebUI on /oapi/
+default_sender_name | What to use as default sender name
+send_async | whether to deffer SMS sending to celery
+celery_module | python path to your celery tasks module
 
 That's it ! Test it by accessing `/oapi/` and playing with the tester.
 
