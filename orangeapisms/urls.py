@@ -35,6 +35,8 @@ urlpatterns = [
         name='oapisms_tester_fsmsdr'),
     url(r'^tester/logs/?$', views.logs,
         name='oapisms_tester_logs'),
+    url(r'^tester/balance/?$', views.check_balance,
+        name='oapisms_tester_balance'),
     url(r'^tester/?$', views.tester,
         name='oapisms_tester'),
 ]

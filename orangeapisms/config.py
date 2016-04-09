@@ -37,6 +37,7 @@ DEFAULT_CONFIG = {
     'use_db': True,
     'smsmt_url': 'https://api.orange.com/smsmessaging/v1',
     'oauth_url': 'https://api.orange.com/oauth/v2',
+    'smsadmin_url': 'https://api.orange.com/sms/admin/v1',
     'sender_address': '+22300000',
     'sender_name': "API Custom Name",
     'client_id': None,
@@ -46,6 +47,9 @@ DEFAULT_CONFIG = {
     'default_sender_name': 'sender_address',
     'send_async': False,
     'celery_module': None,
+    'country': 'MLI',
+    'country_prefix': '223',
+    'fix_msisdn': True,
 }
 
 CONFIG = build_config(DEFAULT_CONFIG, get_json_config())

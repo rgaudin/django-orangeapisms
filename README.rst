@@ -44,6 +44,10 @@ That's it ! Test it by accessing `/oapi/` and playing with the tester.
 :default_sender_name:    What to use as default sender name
 :send_async:             whether to deffer SMS sending to celery
 :celery_module:          python path to your celery tasks module
+:country:                ISO 3166-1 code for your country (used for balance checking)
+:fix_msisdn:             whether to fix SMS-MT destination without prefix
+:country_prefix:         MSISDN numeric prefix for your country (to fix SMS-MT without prefix)
+
 
 Usage
 --------

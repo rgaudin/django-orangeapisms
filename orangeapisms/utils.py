@@ -14,15 +14,26 @@ import requests
 from orangeapisms import import_path, async_check
 from orangeapisms.models import SMSMessage
 from orangeapisms.config import get_config, update_config
+from orangeapisms.datetime import datetime_from_iso
+from orangeapisms.exceptions import OrangeAPIError
 
 logger = logging.getLogger(__name__)
 ONE_DAY = 86400
+SMS_SERVICE = 'SMS_OCB'
+
+
+def clean_msisdn(to_addr):
+    if not to_addr.startswith('+') and get_config('fix_msisdn'):
+        return "+{prefix}{addr}".format(prefix=get_config('country_prefix'),
+                                        addr=to_addr)
+    return to_addr
 
 
 def send_sms(to_addr, message,
              as_addr=get_config('default_sender_name'),
              db_save=get_config('use_db')):
     ''' SMS-MT shortcut function '''
+    to_addr = clean_msisdn(to_addr)
     if not db_save:
         return submit_sms_mt(to_addr, message, as_addr)
     msg = SMSMessage.create_mt(to_addr, message,
@@ -39,7 +50,7 @@ def submit_sms_mt_request(payload, message=None):
     return do_submit_sms_mt_request(payload, message)
 
 
-def do_submit_sms_mt_request(payload, message=None):
+def do_submit_sms_mt_request(payload, message=None, silent_failure=False):
     ''' Use submit_sms_mt_request
 
     actual submission of API request for SMS-MT '''
@@ -53,32 +64,21 @@ def do_submit_sms_mt_request(payload, message=None):
     url = "{api}/outbound/{addr}/requests".format(
         api=get_config('smsmt_url'),
         addr=urllib.quote_plus(sender_address))
-    headers = {
-        'Authorization': 'Bearer {token}'
-        .format(token=get_token()),
-        'Content-type': 'application/json;charset=UTF-8'
-    }
-
-    from pprint import pprint as pp ; pp(headers)
-
-    from pprint import pprint as pp ; pp(payload)
+    headers = get_standard_header()
 
     req = requests.post(url, headers=headers, json=payload)
-    resp = req.json()
 
-    from pprint import pprint as pp ; pp(resp)
-
-    if "requestError" in resp.keys():
-        exp_name = resp['requestError'].keys()[0]
-        exp_data = resp['requestError'][exp_name]
-        logger.error("HTTP {http_code}: {exp_name} - "
-                     "{messageId}: {text} -- {variables}"
-                     .format(http_code=req.status_code,
-                             exp_name=exp_name,
-                             messageId=exp_data['messageId'],
-                             text=exp_data['text'],
-                             variables=exp_data['variables']))
-        return update_status(message, False)
+    try:
+        assert req.status_code == 201
+        resp = req.json()
+    except AssertionError:
+        exp = OrangeAPIError.from_request(req)
+        logger.error("Unable to transmit SMS-MT. {exp}".format(exp=exp))
+        logger.exception(exp)
+        update_status(message, False)
+        if not silent_failure:
+            raise exp
+        return False
 
     rurl = resp['outboundSMSMessageRequest'] \
         .get('resourceURL', '').rsplit('/', 1)[-1]
@@ -92,7 +92,7 @@ def submit_sms_mt(address, message,
                   sender_name=get_config('default_sender_name'),
                   callback_data=None):
     return submit_sms_mt_request(
-        mt_payload(dest_addr=address,
+        mt_payload(dest_addr=clean_msisdn(address),
                    message=message,
                    sender_address=get_config('sender_address'),
                    sender_name=sender_name))
@@ -101,7 +101,8 @@ def submit_sms_mt(address, message,
 def mt_payload(dest_addr, message, sender_address, sender_name):
     return {
         "outboundSMSMessageRequest": {
-            "address": "tel:{dest_addr}".format(dest_addr=dest_addr),
+            "address": "tel:{dest_addr}".format(
+                dest_addr=clean_msisdn(dest_addr)),
             "outboundSMSTextMessage": {
                 "message": message
             },
@@ -128,7 +129,14 @@ def get_token():
     return get_config('token')
 
 
-def request_token():
+def get_standard_header():
+    return {
+        'Authorization': 'Bearer {token}'.format(token=get_token()),
+        'Content-type': 'application/json;charset=UTF-8'
+    }
+
+
+def request_token(silent_failure=False):
     url = "{oauth_url}/token".format(oauth_url=get_config('oauth_url'))
     basic_header = base64.b64encode(
         "{client_id}:{client_secret}".format(
@@ -149,8 +157,47 @@ def request_token():
         update_config(token_data, save=True)
         return token_data
     else:
-        logger.error("HTTP {http} {error}: {description}".format(
-            http=req.status_code,
-            error=resp['error'],
-            description=resp['error_description']))
+        exp = OrangeAPIError.from_request(req)
+        logger.error("Unable to retrieve token. {}".format(exp))
+        logger.exception(exp)
+        if not silent_failure:
+            raise exp
         return False
+
+
+def get_contracts(silent_failure=False):
+    url = "{api}/contracts".format(api=get_config('smsadmin_url'))
+    headers = get_standard_header()
+
+    req = requests.get(url, headers=headers)
+    try:
+        assert req.status_code == 200
+        return req.json()
+    except AssertionError:
+        exp = OrangeAPIError.from_request(req)
+        logger.error("Unable to retrieve contracts. {exp}".format(exp=exp))
+        logger.exception(exp)
+        if not silent_failure:
+            raise exp
+
+
+def get_sms_balance(country=get_config('country')):
+    contracts = get_contracts()
+    expiry = None
+    balance = 0
+    for contract in contracts.get('partnerContracts', {}).get('contracts', []):
+        if not contract['service'] == SMS_SERVICE:
+            continue
+
+        for sc in contract.get('serviceContracts', []):
+            if not sc['country'] == country:
+                continue
+
+            if not sc['service'] == SMS_SERVICE:
+                continue
+
+            balance += sc['availableUnits']
+            expires = datetime_from_iso(sc['expires'])
+            if expiry is None or expiry < expires:
+                expiry = expires
+    return balance, expiry

@@ -30,6 +30,7 @@
 					<li {% if page = 'fsmsmo' %}class="active"{% endif %}><a href="{% url 'oapisms_tester_fsmsmo' %}" >Fake SMS-MO</a></li>
 					<li {% if page = 'fsmsdr' %}class="active"{% endif %}><a href="{% url 'oapisms_tester_fsmsdr' %}" >Fake SMS-MT DR</a></li>
 					<li {% if page = 'logs' %}class="active"{% endif %}><a href="{% url 'oapisms_tester_logs' %}">SMS Logs</a></li>
+					<li><a href="{% url 'oapisms_tester_balance' %}">Balance</a></li>
 				</ul>
 				{% else %}
 				<hr />

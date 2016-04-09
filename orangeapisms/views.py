@@ -18,7 +18,8 @@ from django.contrib import messages
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from orangeapisms.models import SMSMessage
-from orangeapisms.utils import get_handler, send_sms
+from orangeapisms.utils import (get_handler, send_sms,
+                                get_sms_balance, clean_msisdn)
 from orangeapisms.datetime import datetime_to_iso
 from orangeapisms.config import get_config
 
@@ -54,6 +55,9 @@ class SMSMTForm(forms.Form):
     def get_initial(cls):
         return {}
 
+    def clean_destination_address(self):
+        return clean_msisdn(self.cleaned_data.get('destination_address'))
+
 
 class FSMSMTForm(SMSMTForm):
     status = forms.ChoiceField(choices=SMSMessage.STATUSES.items())
@@ -79,6 +83,9 @@ class FSMSMOForm(forms.Form):
     @classmethod
     def get_initial(cls):
         return {'created_on': timezone.now()}
+
+    def clean_destination_address(self):
+        return clean_msisdn(self.cleaned_data.get('destination_address'))
 
 
 class FSMSDRForm(forms.Form):
@@ -121,6 +128,22 @@ def home(request):
 @activated
 def tester(request):
     return redirect('oapisms_tester_smsmt')
+
+
+@activated
+def check_balance(request):
+    balance, expiry = get_sms_balance()
+    try:
+        balance, expiry = get_sms_balance()
+        feedback = "{balance} SMS remaining until {date} ({country})".format(
+            balance=balance, country=get_config('country'),
+            date=expiry.strftime('%c'))
+        lvl = messages.INFO
+    except Exception as e:
+        feedback = e.__str__()
+        lvl = messages.WARNING
+    messages.add_message(request, lvl, feedback)
+    return redirect('oapisms_tester')
 
 
 @activated
