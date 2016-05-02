@@ -7,6 +7,8 @@ from __future__ import (unicode_literals, absolute_import,
 import json
 import logging
 
+from datetime import datetime
+
 from django.utils import timezone
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
@@ -132,12 +134,17 @@ def tester(request):
 
 @activated
 def check_balance(request):
+    now = datetime.now()
     balance, expiry = get_sms_balance()
+
+    if expiry <= now:
+        msg_balance = "{balance} remaining SMS expired on {date}. Top-up " \
+                      "account to extend expiry date ({country})"
+    else:
+        msg_balance = "{balance} SMS remaining until {date} ({country})"
     try:
-        balance, expiry = get_sms_balance()
-        feedback = "{balance} SMS remaining until {date} ({country})".format(
-            balance=balance, country=get_config('country'),
-            date=expiry.strftime('%c'))
+        feedback = msg_balance.format(balance=balance,
+            country=get_config('country'), date=expiry.strftime('%c'))
         lvl = messages.INFO
     except Exception as e:
         feedback = e.__str__()
