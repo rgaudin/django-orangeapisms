@@ -10,6 +10,8 @@ import urllib
 import base64
 
 import requests
+import pytz
+from django.utils import timezone
 
 from orangeapisms import import_path, async_check
 from orangeapisms.models import SMSMessage
@@ -20,7 +22,7 @@ from orangeapisms.exceptions import OrangeAPIError
 logger = logging.getLogger(__name__)
 ONE_DAY = 86400
 SMS_SERVICE = 'SMS_OCB'
-
+API_TZ = pytz.timezone('Europe/Paris')
 
 def clean_msisdn(to_addr):
     if not to_addr.startswith('+') and get_config('fix_msisdn'):
@@ -200,4 +202,6 @@ def get_sms_balance(country=get_config('country')):
             expires = datetime_from_iso(sc['expires'])
             if expiry is None or expiry < expires:
                 expiry = expires
+    if expiry is not None:
+        expiry = timezone.make_aware(expiry, API_TZ)
     return balance, expiry

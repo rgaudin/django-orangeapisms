@@ -134,7 +134,6 @@ def tester(request):
 def check_balance(request):
     now = timezone.now()
     balance, expiry = get_sms_balance()
-    expiry = timezone.make_aware(expiry, timezone.get_default_timezone())
 
     if expiry <= now:
         balance_msg = "{balance} remaining SMS expired on {date}. Top-up " \
