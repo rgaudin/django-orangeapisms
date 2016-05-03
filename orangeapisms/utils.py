@@ -8,6 +8,7 @@ import datetime
 import logging
 import urllib
 import base64
+import re
 
 import requests
 import pytz
@@ -24,10 +25,11 @@ ONE_DAY = 86400
 SMS_SERVICE = 'SMS_OCB'
 API_TZ = pytz.timezone('Europe/Paris')
 
+
 def clean_msisdn(to_addr):
     if not to_addr.startswith('+') and get_config('fix_msisdn'):
         return "+{prefix}{addr}".format(prefix=get_config('country_prefix'),
-                                        addr=to_addr)
+                                        addr=re.sub(r"\D", "", to_addr))
     return to_addr
 
 
