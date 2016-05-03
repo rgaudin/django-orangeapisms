@@ -132,12 +132,17 @@ def tester(request):
 
 @activated
 def check_balance(request):
+    now = timezone.now()
     balance, expiry = get_sms_balance()
+
+    if expiry <= now:
+        balance_msg = "{balance} remaining SMS expired on {date}. Top-up " \
+                      "account to extend expiry date ({country})"
+    else:
+        balance_msg = "{balance} SMS remaining until {date} ({country})"
     try:
-        balance, expiry = get_sms_balance()
-        feedback = "{balance} SMS remaining until {date} ({country})".format(
-            balance=balance, country=get_config('country'),
-            date=expiry.strftime('%c'))
+        feedback = balance_msg.format(balance=balance,
+            country=get_config('country'), date=expiry.strftime('%c'))
         lvl = messages.INFO
     except Exception as e:
         feedback = e.__str__()
