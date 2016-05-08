@@ -27,9 +27,11 @@ API_TZ = pytz.timezone('Europe/Paris')
 
 
 def clean_msisdn(to_addr):
-    if not to_addr.startswith('+') and get_config('fix_msisdn'):
-        return "+{prefix}{addr}".format(prefix=get_config('country_prefix'),
-                                        addr=re.sub(r"\D", "", to_addr))
+    if get_config('fix_msisdn'):
+        to_addr = re.sub("[^\d+]", "", to_addr)
+        if not to_addr.startswith('+'):
+            return "+{prefix}{addr}".format(prefix=get_config('country_prefix'),
+                                            addr=to_addr)
     return to_addr
 
 
