@@ -1,0 +1,7 @@
+Django >= 1.8.5
+django-forms-bootstrap >= 3.0.1
+iso8601 >= 0.1.10
+pytz >= 2015.6
+requests >= 2.8.1
+simplejson >= 3.8.2
+pytest
