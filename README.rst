@@ -1,6 +1,9 @@
 orangeapisms
 =========================
 
+.. image:: https://img.shields.io/pypi/v/orangeapisms.svg
+   :target: https://pypi.python.org/pypi/orangeapisms
+
 Django app to add support for Orange API SMS-MO and SMS-MT (with DR)
 
 Install
