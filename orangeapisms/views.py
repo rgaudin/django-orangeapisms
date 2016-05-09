@@ -19,7 +19,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from orangeapisms.models import SMSMessage
 from orangeapisms.utils import (get_handler, send_sms,
-                                get_sms_balance, clean_msisdn)
+                                get_sms_balance, cleaned_msisdn)
 from orangeapisms.datetime import datetime_to_iso
 from orangeapisms.config import get_config
 
@@ -56,7 +56,7 @@ class SMSMTForm(forms.Form):
         return {}
 
     def clean_destination_address(self):
-        return clean_msisdn(self.cleaned_data.get('destination_address'))
+        return cleaned_msisdn(self.cleaned_data.get('destination_address'))
 
 
 class FSMSMTForm(SMSMTForm):
@@ -85,7 +85,7 @@ class FSMSMOForm(forms.Form):
         return {'created_on': timezone.now()}
 
     def clean_destination_address(self):
-        return clean_msisdn(self.cleaned_data.get('destination_address'))
+        return cleaned_msisdn(self.cleaned_data.get('destination_address'))
 
 
 class FSMSDRForm(forms.Form):

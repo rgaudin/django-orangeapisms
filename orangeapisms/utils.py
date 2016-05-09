@@ -36,6 +36,9 @@ def cleaned_msisdn(to_addr):
     if not get_config('fix_msisdn'):
         return to_addr
 
+    # harmonize intl. number format (00xxx) to +xxx
+    to_addr = re.sub(r"^00", "+", to_addr)
+
     # if a suffix was supplied, fix chars only
     if to_addr.startswith('+'):
         return "+{addr}".format(addr=re.sub(r"\D", "", to_addr))

@@ -42,3 +42,8 @@ def test_msisdn_extra_spaces(correct_msisdn):
 def test_msisdn_extra_chars(correct_msisdn):
     number = "abc76333005def"
     assert correct_msisdn == cleaned_msisdn(number)
+
+
+def test_msisdn_zero_prefixed(correct_msisdn):
+    number = "0022376333005"
+    assert correct_msisdn == cleaned_msisdn(number)
