@@ -12,10 +12,6 @@ import re
 
 import requests
 import pytz
-<<<<<<< HEAD
-from django.utils import timezone
-=======
->>>>>>> rgaudin/master
 
 from orangeapisms import import_path, async_check
 from orangeapisms.models import SMSMessage
@@ -27,17 +23,6 @@ logger = logging.getLogger(__name__)
 ONE_DAY = 86400
 SMS_SERVICE = 'SMS_OCB'
 API_TZ = pytz.timezone('Europe/Paris')
-<<<<<<< HEAD
-
-
-def clean_msisdn(to_addr):
-    if get_config('fix_msisdn'):
-        to_addr = re.sub("[^\d+]", "", to_addr)
-        if not to_addr.startswith('+'):
-            return "+{prefix}{addr}".format(prefix=get_config('country_prefix'),
-                                            addr=to_addr)
-    return to_addr
-=======
 UTC = pytz.utc
 
 
@@ -51,6 +36,8 @@ def cleaned_msisdn(to_addr):
     if not get_config('fix_msisdn'):
         return to_addr
 
+    to_addr = re.sub(r"^00", "+", to_addr)
+
     # if a suffix was supplied, fix chars only
     if to_addr.startswith('+'):
         return "+{addr}".format(addr=re.sub(r"\D", "", to_addr))
@@ -61,7 +48,6 @@ def cleaned_msisdn(to_addr):
     if to_addr.startswith(prefix):
         to_addr = re.sub(r"^{prefix}".format(prefix=prefix), "", to_addr)
     return "+{prefix}{addr}".format(prefix=prefix, addr=to_addr)
->>>>>>> rgaudin/master
 
 
 def send_sms(to_addr, message,
@@ -236,9 +222,5 @@ def get_sms_balance(country=get_config('country')):
             if expiry is None or expiry < expires:
                 expiry = expires
     if expiry is not None:
-<<<<<<< HEAD
-        expiry = timezone.make_aware(expiry, API_TZ)
-=======
         expiry = API_TZ.localize(expiry)
->>>>>>> rgaudin/master
     return balance, expiry
