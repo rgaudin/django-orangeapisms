@@ -3,6 +3,8 @@ orangeapisms
 
 .. image:: https://img.shields.io/pypi/v/orangeapisms.svg
    :target: https://pypi.python.org/pypi/orangeapisms
+.. image:: https://api.travis-ci.org/rgaudin/django-orangeapisms.svg
+   :target: https://travis-ci.org/rgaudin/django-orangeapisms
 
 Django app to add support for Orange API SMS-MO and SMS-MT (with DR)
 
