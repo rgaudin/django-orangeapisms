@@ -18,8 +18,9 @@ def import_path(callable_name, module, fallback=None):
         m = __import__(modname, fromlist=[attr])
         return getattr(m, attr)
 
-    ret = lambda mod, call: do_import('{module}.{callable}'
-                                      .format(module=mod, callable=call))
+    def ret(mod, call):
+        do_import('{module}.{callable}'.format(module=mod, callable=call))
+
     try:
         return ret(module, callable_name)
     except (ImportError, AttributeError):

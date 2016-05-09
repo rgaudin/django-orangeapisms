@@ -26,12 +26,12 @@ setup(
     package_data={'': ['README.rst', 'LICENSE']},
     package_dir={'orangeapisms': 'orangeapisms'},
     install_requires=[
-        'Django >= 1.8.5',
-        'django-forms-bootstrap >= 3.0.1',
-        'iso8601 >= 0.1.10',
+        'Django == 1.8.5',
+        'django-forms-bootstrap == 3.0.1',
+        'iso8601 == 0.1.10',
         'pytz >= 2015.6',
-        'requests >= 2.8.1',
-        'simplejson >= 3.8.2',
+        'requests == 2.8.1',
+        'simplejson == 3.8.2',
     ],
     classifiers=[
         'Development Status :: 4 - Beta',
@@ -40,5 +40,13 @@ setup(
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.3',
-    ]
+    ],
+    setup_requires=[
+        'pytest-runner',
+    ],
+    tests_require=[
+        'pytest',
+        'pytest-django',
+        'pytest-pep8'
+    ],
 )

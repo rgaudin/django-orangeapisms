@@ -141,7 +141,8 @@ def check_balance(request):
     else:
         balance_msg = "{balance} SMS remaining until {date} ({country})"
     try:
-        feedback = balance_msg.format(balance=balance,
+        feedback = balance_msg.format(
+            balance=balance,
             country=get_config('country'), date=expiry.strftime('%c'))
         lvl = messages.INFO
     except Exception as e:
@@ -165,8 +166,8 @@ def form_view(request, form_name, action_name="Submit"):
             success, msg = send_sms(
                 to_addr=form.cleaned_data.get('destination_address'),
                 message=form.cleaned_data.get('content'),
-                as_addr=form.cleaned_data.get('sender_name')
-                or get_config('default_sender_name'))
+                as_addr=form.cleaned_data.get('sender_name') or
+                get_config('default_sender_name'))
             handle_smsmt(msg)
             return success, "Sent {}".format(msg)
 
