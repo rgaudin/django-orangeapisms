@@ -12,7 +12,10 @@ import re
 
 import requests
 import pytz
+<<<<<<< HEAD
 from django.utils import timezone
+=======
+>>>>>>> rgaudin/master
 
 from orangeapisms import import_path, async_check
 from orangeapisms.models import SMSMessage
@@ -24,6 +27,7 @@ logger = logging.getLogger(__name__)
 ONE_DAY = 86400
 SMS_SERVICE = 'SMS_OCB'
 API_TZ = pytz.timezone('Europe/Paris')
+<<<<<<< HEAD
 
 
 def clean_msisdn(to_addr):
@@ -33,13 +37,38 @@ def clean_msisdn(to_addr):
             return "+{prefix}{addr}".format(prefix=get_config('country_prefix'),
                                             addr=to_addr)
     return to_addr
+=======
+UTC = pytz.utc
+
+
+def cleaned_msisdn(to_addr):
+    """ fixes common mistakes to make to_addr a MSISDN
+
+        - removes extra chars
+        - starts with a +
+        - adds prefix if it seems missing """
+
+    if not get_config('fix_msisdn'):
+        return to_addr
+
+    # if a suffix was supplied, fix chars only
+    if to_addr.startswith('+'):
+        return "+{addr}".format(addr=re.sub(r"\D", "", to_addr))
+
+    # no prefix, make sure to remove default prefix if present and fix chars
+    prefix = get_config('country_prefix')
+    to_addr = re.sub(r"\D", "", to_addr)
+    if to_addr.startswith(prefix):
+        to_addr = re.sub(r"^{prefix}".format(prefix=prefix), "", to_addr)
+    return "+{prefix}{addr}".format(prefix=prefix, addr=to_addr)
+>>>>>>> rgaudin/master
 
 
 def send_sms(to_addr, message,
              as_addr=get_config('default_sender_name'),
              db_save=get_config('use_db')):
     ''' SMS-MT shortcut function '''
-    to_addr = clean_msisdn(to_addr)
+    to_addr = cleaned_msisdn(to_addr)
     if not db_save:
         return submit_sms_mt(to_addr, message, as_addr)
     msg = SMSMessage.create_mt(to_addr, message,
@@ -98,7 +127,7 @@ def submit_sms_mt(address, message,
                   sender_name=get_config('default_sender_name'),
                   callback_data=None):
     return submit_sms_mt_request(
-        mt_payload(dest_addr=clean_msisdn(address),
+        mt_payload(dest_addr=cleaned_msisdn(address),
                    message=message,
                    sender_address=get_config('sender_address'),
                    sender_name=sender_name))
@@ -108,7 +137,7 @@ def mt_payload(dest_addr, message, sender_address, sender_name):
     return {
         "outboundSMSMessageRequest": {
             "address": "tel:{dest_addr}".format(
-                dest_addr=clean_msisdn(dest_addr)),
+                dest_addr=cleaned_msisdn(dest_addr)),
             "outboundSMSTextMessage": {
                 "message": message
             },
@@ -207,5 +236,9 @@ def get_sms_balance(country=get_config('country')):
             if expiry is None or expiry < expires:
                 expiry = expires
     if expiry is not None:
+<<<<<<< HEAD
         expiry = timezone.make_aware(expiry, API_TZ)
+=======
+        expiry = API_TZ.localize(expiry)
+>>>>>>> rgaudin/master
     return balance, expiry

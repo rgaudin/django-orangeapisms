@@ -7,20 +7,21 @@ from __future__ import (unicode_literals, absolute_import,
 import logging
 import datetime
 
+import pytz
 import iso8601
 
 logger = logging.getLogger(__name__)
-UTC = iso8601.iso8601.Utc()
+UTC = pytz.utc
 
 
 def datetime_is_aware(adate):
     return adate.tzinfo is not None
 
 
-def datetime_aware(adate):
+def datetime_aware(adate, tz=UTC):
     if datetime_is_aware(adate):
         return adate
-    return adate.replace(tzinfo=UTC)
+    return adate.replace(tzinfo=tz)
 
 
 def datetime_from_iso(aniso):
@@ -49,4 +50,3 @@ def decode_datetime(obj):
         return obj
     _, aniso = obj.split('datetime:')
     return datetime_from_iso(aniso)
-
