@@ -7,6 +7,8 @@ from __future__ import (unicode_literals, absolute_import,
 import logging
 import re
 
+from py3compat import string_types
+
 logger = logging.getLogger(__name__)
 
 
@@ -34,7 +36,9 @@ class OrangeAPIError(Exception):
             response = {}
 
         def _verbose_desc(text, variables):
-            if isinstance(variables, basestring):
+            if variables is None:
+                variables = []
+            if isinstance(variables, string_types):
                 variables = [variables]
 
             return re.sub(r'(\%[0-9])', "`{}`", text).format(*variables)
@@ -42,13 +46,14 @@ class OrangeAPIError(Exception):
         def _requestError():
             d = response.get('requestError', {})
             try:
-                dd = d[d.keys()[0]]
+                dd = d[list(d)[0]]
             except IndexError:
                 return {}
             return {
                 'error_code': dd['messageId'],
-                'message': d.keys()[0],
-                'description': _verbose_desc(dd['text'], dd['variables'])
+                'message': list(d)[0],
+                'description': _verbose_desc(dd.get('text'),
+                                             dd.get('variables'))
             }
 
         def _standard():

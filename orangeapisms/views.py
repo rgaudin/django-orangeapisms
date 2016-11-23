@@ -19,7 +19,9 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from orangeapisms.models import SMSMessage
 from orangeapisms.utils import (get_handler, send_sms,
-                                get_sms_balance, cleaned_msisdn)
+                                get_sms_balance, cleaned_msisdn,
+                                get_sms_dr_endpoint,
+                                subscribe_sms_dr_endpoint)
 from orangeapisms.datetime import datetime_to_iso
 from orangeapisms.config import get_config
 
@@ -114,11 +116,12 @@ def home(request):
     from django.core.urlresolvers import reverse
 
     url_mo = request.build_absolute_uri(reverse('oapisms_mo'))
-    url_mt = request.build_absolute_uri(reverse('oapisms_dr'))
+    url_mtdr = request.build_absolute_uri(reverse('oapisms_dr'))
     context.update({
         'endpoints': [
-            ('SMS-MO', url_mo),
-            ('SMS-DR', url_mt),
+            ("SMS-MO", url_mo),
+            ("SMS-DR", url_mtdr),
+            ("Registered SMS-DR", get_sms_dr_endpoint(True))
         ]
     })
 
@@ -150,6 +153,28 @@ def check_balance(request):
         lvl = messages.WARNING
     messages.add_message(request, lvl, feedback)
     return redirect('oapisms_tester')
+
+
+@activated
+def register_smsdr_endpoint(request):
+    from django.core.urlresolvers import reverse
+    endpoint_url = request.build_absolute_uri(reverse('oapisms_dr'))
+    endpoint_url = "https://kanini.ml/oapi/smsdr"
+    try:
+        assert subscribe_sms_dr_endpoint(endpoint_url) is True
+        feedback = "Successfuly set {url} as SMS-DR endpoint. " \
+                   "Subscription ID: {sub}" \
+                   .format(url=endpoint_url,
+                           sub=get_config('smsmtdr_subsription_id'))
+        lvl = messages.SUCCESS
+    except AssertionError:
+        feedback = "Unable to subscribe SMS-DR endpoint."
+        lvl = messages.WARNING
+    except Exception as e:
+        feedback = e.__str__()
+        lvl = messages.WARNING
+    messages.add_message(request, lvl, feedback)
+    return redirect('oapisms_home')
 
 
 @activated

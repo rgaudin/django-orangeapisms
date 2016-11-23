@@ -4,7 +4,7 @@
 <h2>Available endpoints</h2>
 <ul>
 	{% for endpoint in endpoints %}
-	<li><strong>{{ endpoint.0 }}</strong>: <code>{{ endpoint.1 }}</code></li>
+	<li><strong>{{ endpoint.0 }}</strong>: <code>{{ endpoint.1 }}</code>{% if endpoint.0 == "SMS-DR" %} <a href="{% url 'oapisms_register_smsdr_endpoint' %}"><button class="btn btn-xs btn-default">register SMS-DR endpoint</button></a>{% endif %}</li>
 	{% endfor %}
 </ul>
 {% endblock %}

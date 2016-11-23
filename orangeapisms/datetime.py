@@ -30,6 +30,10 @@ def datetime_from_iso(aniso):
     return iso8601.parse_date(aniso).replace(tzinfo=None)
 
 
+def aware_datetime_from_iso(aniso):
+    return datetime_aware(datetime_from_iso(aniso))
+
+
 def datetime_to_iso(adate):
     if datetime_is_aware(adate):
         adate = adate.replace(tzinfo=None)

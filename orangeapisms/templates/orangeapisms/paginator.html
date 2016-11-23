@@ -5,7 +5,7 @@
     {% endif %}
 
     {% for page_num in cursor.paginator.page_range %}
-    <li{% if page_num = cursor.number %} class="active"{% endif %}><a href="?page={{ page_num }}">{{ page_num }}</a></li>
+    <li{% if page_num == cursor.number %} class="active"{% endif %}><a href="?page={{ page_num }}">{{ page_num }}</a></li>
     {% endfor %}
     
     {% if cursor.has_next %}

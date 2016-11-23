@@ -11,13 +11,15 @@ from collections import OrderedDict
 
 from django.db import models
 from django.utils import timezone
+from py3compat import implements_to_string
 
 from orangeapisms.config import get_config
-from orangeapisms.datetime import datetime_from_iso
+from orangeapisms.datetime import aware_datetime_from_iso
 
 logger = logging.getLogger(__name__)
 
 
+@implements_to_string
 class SMSMessage(models.Model):
 
     class Meta:
@@ -88,9 +90,6 @@ class SMSMessage(models.Model):
     status = models.CharField(max_length=64, choices=STATUSES.items())
 
     def __str__(self):
-        return self.__unicode__().encode('UTF-8')
-
-    def __unicode__(self):
         return "{type}: {uuid}".format(type=self.sms_type_verbose,
                                        uuid=self.suuid)
 
@@ -142,7 +141,7 @@ class SMSMessage(models.Model):
                 cls.clean_address(payload.get('destinationAddress')),
             'message_id': payload.get('messageId'),
             'content': payload.get('message'),
-            'created_on': datetime_from_iso(payload.get('dateTime'))
+            'created_on': aware_datetime_from_iso(payload.get('dateTime'))
         }
         if not get_config('use_db'):
             return cls(**kwargs)
@@ -161,8 +160,8 @@ class SMSMessage(models.Model):
                              .format(uuid=uuid))
         kwargs = {
             'sms_type': cls.DR,
-            'delivery_status_on': payload.get('delivery_status_on',
-                                              timezone.now()),
+            'delivery_status_on': aware_datetime_from_iso(
+                payload.get('delivery_status_on', timezone.now())),
             'status': cls.DELIVERY_STATUS_MATRIX.get(
                 payload.get('deliveryInfo', {})
                        .get('deliveryStatus', cls.NOT_DELIVERED))
@@ -201,7 +200,7 @@ class SMSMessage(models.Model):
 
     @property
     def suuid(self):
-        return self.uuid.get_hex() or None
+        return self.uuid.hex or None
 
     def update_reference(self, reference_code):
         self.reference_code = reference_code

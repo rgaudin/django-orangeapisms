@@ -19,7 +19,8 @@ def import_path(callable_name, module, fallback=None):
         return getattr(m, attr)
 
     def ret(mod, call):
-        do_import('{module}.{callable}'.format(module=mod, callable=call))
+        return do_import('{module}.{callable}'
+                         .format(module=mod, callable=call))
 
     try:
         return ret(module, callable_name)

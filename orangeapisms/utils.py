@@ -4,14 +4,15 @@
 
 from __future__ import (unicode_literals, absolute_import,
                         division, print_function)
+
 import datetime
 import logging
-import urllib
 import base64
 import re
 
 import requests
 import pytz
+from py3compat import PY2
 
 from orangeapisms import import_path, async_check
 from orangeapisms.models import SMSMessage
@@ -19,11 +20,24 @@ from orangeapisms.config import get_config, update_config
 from orangeapisms.datetime import datetime_from_iso
 from orangeapisms.exceptions import OrangeAPIError
 
+if PY2:
+    import urllib.quote_plus as quote
+else:
+    from urllib.parse import quote
+
+
 logger = logging.getLogger(__name__)
 ONE_DAY = 86400
 SMS_SERVICE = 'SMS_OCB'
 API_TZ = pytz.timezone('Europe/Paris')
 UTC = pytz.utc
+
+
+def b64encode(data):
+    if PY2:
+        return base64.b64encode(data)
+    else:
+        return base64.b64encode(bytes(data, "utf-8")).decode("ASCII")
 
 
 def cleaned_msisdn(to_addr):
@@ -85,7 +99,7 @@ def do_submit_sms_mt_request(payload, message=None, silent_failure=False):
     sender_address = payload['outboundSMSMessageRequest']['senderAddress']
     url = "{api}/outbound/{addr}/requests".format(
         api=get_config('smsmt_url'),
-        addr=urllib.quote_plus(sender_address))
+        addr=quote(sender_address))
     headers = get_standard_header()
 
     req = requests.post(url, headers=headers, json=payload)
@@ -160,7 +174,7 @@ def get_standard_header():
 
 def request_token(silent_failure=False):
     url = "{oauth_url}/token".format(oauth_url=get_config('oauth_url'))
-    basic_header = base64.b64encode(
+    basic_header = b64encode(
         "{client_id}:{client_secret}".format(
             client_id=get_config('client_id'),
             client_secret=get_config('client_secret')))
@@ -225,3 +239,69 @@ def get_sms_balance(country=get_config('country')):
     if expiry is not None:
         expiry = API_TZ.localize(expiry)
     return balance, expiry
+
+
+def get_sms_dr_subscriptions(silent_failure=False):
+    subscription_id = get_config('smsmtdr_subsription_id')
+    if not subscription_id:
+        if silent_failure:
+            return {}
+        raise ValueError("Missing Subscription ID")
+    url = "{api}/outbound/subscriptions/{subscription}".format(
+        api=get_config('smsmt_url'),
+        subscription=subscription_id)
+    headers = get_standard_header()
+
+    req = requests.get(url, headers=headers)
+    try:
+        assert req.status_code == 200
+        return req.json()
+    except AssertionError:
+        exp = OrangeAPIError.from_request(req)
+        logger.error("Unable to retrieve contracts. {exp}".format(exp=exp))
+        logger.exception(exp)
+        if not silent_failure:
+            raise exp
+
+
+def get_sms_dr_endpoint(silent_failure=False):
+    subscriptions = get_sms_dr_subscriptions(silent_failure)
+    return subscriptions.get('deliveryReceiptSubscription', {}) \
+        .get('callbackReference', {}) \
+        .get('notifyURL', None)
+
+
+def subscribe_sms_dr_endpoint(endpoint_url, silent_failure=False):
+    sender_address = get_config('sender_address')
+    payload = {
+        'deliveryReceiptSubscription': {
+            'callbackReference': {
+                'notifyURL': endpoint_url
+            }
+        }
+    }
+    url = "{api}/outbound/{addr}/subscriptions".format(
+        api=get_config('smsmt_url'),
+        addr=quote(sender_address))
+    headers = get_standard_header()
+
+    req = requests.post(url, headers=headers, json=payload)
+
+    try:
+        assert req.status_code == 201
+        resp = req.json()
+    except AssertionError:
+        exp = OrangeAPIError.from_request(req)
+        logger.error("Unable to subscribe an SMS-DR endpoint. {exp}"
+                     .format(exp=exp))
+        logger.exception(exp)
+        if not silent_failure:
+            raise exp
+        return False
+
+    subscription_id = resp['deliveryReceiptSubscription'] \
+        .get('resourceURL', '').rsplit('/', 1)[-1]
+
+    if subscription_id:
+        update_config({'smsmtdr_subsription_id': subscription_id}, save=True)
+    return bool(subscription_id)
