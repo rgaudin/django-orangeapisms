@@ -13,7 +13,7 @@ with open('README.rst', 'r', 'utf-8') as f:
 
 setup(
     name='orangeapisms',
-    version='0.20',
+    version='0.21',
     description='Django app to add support for Orange API SMS-MO, SMS-MT/DR',
     long_description=readme,
     author='renaud gaudin',
@@ -28,10 +28,11 @@ setup(
     install_requires=[
         'Django == 1.10.3',
         'django-forms-bootstrap == 3.0.1',
-        'iso8601 == 0.1.10',
+        'iso8601 == 0.1.11',
         'pytz >= 2015.6',
-        'requests == 2.8.1',
-        'simplejson == 3.8.2',
+        'requests == 2.12.1',
+        'simplejson == 3.10.0',
+        'py3compat >= 0.3',
     ],
     classifiers=[
         'Development Status :: 4 - Beta',
