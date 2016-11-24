@@ -13,13 +13,13 @@ with open('README.rst', 'r', 'utf-8') as f:
 
 setup(
     name='orangeapisms',
-    version='0.22',
+    version='0.23',
     description='Django app to add support for Orange API SMS-MO, SMS-MT/DR',
     long_description=readme,
     author='renaud gaudin',
     author_email='rgaudin@gmail.com',
     url='http://github.com/rgaudin/django-orangeapisms',
-    keywords="orange",
+    keywords="orange api sms",
     license="Public Domain",
     packages=find_packages('.'),
     zip_safe=False,
