@@ -3,6 +3,6 @@ python:
     - 2.7
     - 3.5
 install:
-  - pip install -r test-requirements.pip
-  - pip install -r requirements.pip
+  - pip install -Ur test-requirements.pip
+  - pip install -Ur requirements.pip
 script: python setup.py pytest
