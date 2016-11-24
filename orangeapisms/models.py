@@ -28,20 +28,20 @@ class SMSMessage(models.Model):
     INCOMING = 'incoming'
     OUTGOING = 'outgoing'
 
-    DIRECTIONS = {
-        INCOMING: "Incoming",
-        OUTGOING: "Outgoing",
-    }
+    DIRECTIONS = OrderedDict([
+        (INCOMING, "Incoming"),
+        (OUTGOING, "Outgoing"),
+    ])
 
     MO = 'sms-mo'
     MT = 'sms-mt'
     DR = 'sms-mt+dr'
 
-    TYPES = {
-        MO: "SMS-MO",
-        MT: "SMS-MT",
-        DR: "SMS-MT+DR"
-    }
+    TYPES = OrderedDict([
+        (MO, "SMS-MO"),
+        (MT, "SMS-MT"),
+        (DR, "SMS-MT+DR"),
+    ])
 
     PENDING = 'pending'
     SENT = 'sent'
