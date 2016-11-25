@@ -9,6 +9,7 @@ import datetime
 import logging
 import base64
 import re
+import json
 
 import requests
 import pytz
@@ -38,6 +39,12 @@ def b64encode(data):
         return base64.b64encode(data)
     else:
         return base64.b64encode(bytes(data, "utf-8")).decode("ASCII")
+
+
+def jsonloads(data):
+    if not PY2 and isinstance(data, bytes):
+        data = data.decode("utf-8")
+    return json.loads(data)
 
 
 def cleaned_msisdn(to_addr):
@@ -244,9 +251,7 @@ def get_sms_balance(country=get_config('country')):
 def get_sms_dr_subscriptions(silent_failure=False):
     subscription_id = get_config('smsmtdr_subsription_id')
     if not subscription_id:
-        if silent_failure:
-            return {}
-        raise ValueError("Missing Subscription ID")
+        return {}
     url = "{api}/outbound/subscriptions/{subscription}".format(
         api=get_config('smsmt_url'),
         subscription=subscription_id)
@@ -305,3 +310,28 @@ def subscribe_sms_dr_endpoint(endpoint_url, silent_failure=False):
     if subscription_id:
         update_config({'smsmtdr_subsription_id': subscription_id}, save=True)
     return bool(subscription_id)
+
+
+def unsubscribe_sms_dr_endpoint(subscription_id, silent_failure=False):
+    sender_address = get_config('sender_address')
+    url = "{api}/outbound/{addr}/subscriptions/{sub}".format(
+        api=get_config('smsmt_url'),
+        addr=quote(sender_address),
+        sub=subscription_id)
+    headers = get_standard_header()
+
+    req = requests.delete(url, headers=headers)
+
+    try:
+        assert req.status_code == 204
+        update_config({'smsmtdr_subsription_id': None}, save=True)
+    except AssertionError:
+        exp = OrangeAPIError.from_request(req)
+        logger.error("Unable to unsubscribe an SMS-DR endpoint. {exp}"
+                     .format(exp=exp))
+        logger.exception(exp)
+        if not silent_failure:
+            raise exp
+        return False
+
+    return True

@@ -4,7 +4,6 @@
 
 from __future__ import (unicode_literals, absolute_import,
                         division, print_function)
-import json
 import logging
 
 from django.utils import timezone
@@ -21,7 +20,8 @@ from orangeapisms.models import SMSMessage
 from orangeapisms.utils import (get_handler, send_sms,
                                 get_sms_balance, cleaned_msisdn,
                                 get_sms_dr_endpoint,
-                                subscribe_sms_dr_endpoint)
+                                subscribe_sms_dr_endpoint, jsonloads,
+                                unsubscribe_sms_dr_endpoint)
 from orangeapisms.datetime import datetime_to_iso
 from orangeapisms.config import get_config
 
@@ -117,11 +117,19 @@ def home(request):
 
     url_mo = request.build_absolute_uri(reverse('oapisms_mo'))
     url_mtdr = request.build_absolute_uri(reverse('oapisms_dr'))
+    try:
+        smsmt_dr_endpoint = get_sms_dr_endpoint(False)
+    except Exception as exp:
+        messages.error(request, exp)
+        smsmt_dr_endpoint = None
+
     context.update({
         'endpoints': [
-            ("SMS-MO", url_mo),
-            ("SMS-DR", url_mtdr),
-            ("Registered SMS-DR", get_sms_dr_endpoint(True))
+            ("SMS-MO", url_mo, None),
+            ("SMS-DR", url_mtdr,
+             ('oapisms_register_smsdr_endpoint', "register")),
+            ("Registered SMS-DR", smsmt_dr_endpoint,
+             ('oapisms_unregister_smsdr_endpoint', "unregister"))
         ]
     })
 
@@ -159,7 +167,6 @@ def check_balance(request):
 def register_smsdr_endpoint(request):
     from django.core.urlresolvers import reverse
     endpoint_url = request.build_absolute_uri(reverse('oapisms_dr'))
-    endpoint_url = "https://kanini.ml/oapi/smsdr"
     try:
         assert subscribe_sms_dr_endpoint(endpoint_url) is True
         feedback = "Successfuly set {url} as SMS-DR endpoint. " \
@@ -173,6 +180,27 @@ def register_smsdr_endpoint(request):
     except Exception as e:
         feedback = e.__str__()
         lvl = messages.WARNING
+    messages.add_message(request, lvl, feedback)
+    return redirect('oapisms_home')
+
+
+@activated
+def unregister_smsdr_endpoint(request):
+    subscription_id = get_config('smsmtdr_subsription_id')
+    if subscription_id is not None:
+        try:
+            assert unsubscribe_sms_dr_endpoint(subscription_id) is True
+            feedback = "Successfuly unsubscribed SMS-DR endpoint."
+            lvl = messages.SUCCESS
+        except AssertionError:
+            feedback = "Unable to unsubscribe SMS-DR endpoint."
+            lvl = messages.WARNING
+        except Exception as e:
+            feedback = e.__str__()
+            lvl = messages.WARNING
+    else:
+        lvl = messages.WARNING
+        feedback = "No registered SMS-DR endpoint to unsubscribe."
     messages.add_message(request, lvl, feedback)
     return redirect('oapisms_home')
 
@@ -292,7 +320,7 @@ def logs(request):
 @require_POST
 def smsmo(request, **options):
 
-    payload = json.loads(request.body)[
+    payload = jsonloads(request.body)[
         'inboundSMSMessageNotification']['inboundSMSMessage']
 
     msg = SMSMessage.create_mo_from_payload(payload)
@@ -313,7 +341,7 @@ def smsmo(request, **options):
 @require_POST
 def smsdr(request, **options):
 
-    payload = json.loads(request.body)['deliveryInfoNotification']
+    payload = jsonloads(request.body)['deliveryInfoNotification']
 
     msg = SMSMessage.record_dr_from_payload(payload)
 

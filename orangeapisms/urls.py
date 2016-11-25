@@ -41,4 +41,7 @@ urlpatterns = [
         name='oapisms_tester'),
     url(r'^tester/register_smsdr_endpoint/?$', views.register_smsdr_endpoint,
         name='oapisms_register_smsdr_endpoint'),
+    url(r'^tester/unregister_smsdr_endpoint/?$',
+        views.unregister_smsdr_endpoint,
+        name='oapisms_unregister_smsdr_endpoint'),
 ]

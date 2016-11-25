@@ -14,7 +14,7 @@ from django.utils import timezone
 from py3compat import implements_to_string
 
 from orangeapisms.config import get_config
-from orangeapisms.datetime import aware_datetime_from_iso
+from orangeapisms.datetime import aware_datetime_from_iso, datetime_to_iso
 
 logger = logging.getLogger(__name__)
 
@@ -161,7 +161,8 @@ class SMSMessage(models.Model):
         kwargs = {
             'sms_type': cls.DR,
             'delivery_status_on': aware_datetime_from_iso(
-                payload.get('delivery_status_on', timezone.now())),
+                payload.get('delivery_status_on',
+                            datetime_to_iso(timezone.now()))),
             'status': cls.DELIVERY_STATUS_MATRIX.get(
                 payload.get('deliveryInfo', {})
                        .get('deliveryStatus', cls.NOT_DELIVERED))

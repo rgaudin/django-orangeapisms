@@ -43,6 +43,7 @@ DEFAULT_CONFIG = {
     'client_id': None,
     'client_secret': None,
     'token': None,
+    'smsmtdr_subsription_id': None,
     'enable_tester': False,
     'default_sender_name': 'sender_address',
     'send_async': False,
