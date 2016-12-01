@@ -320,38 +320,61 @@ def logs(request):
 @require_POST
 def smsmo(request, **options):
 
-    payload = jsonloads(request.body)[
-        'inboundSMSMessageNotification']['inboundSMSMessage']
+    def failure(code, text, msg=None):
+        payload = {
+            'status': 'error',
+            'reason': text
+        }
+        if msg is not None:
+            payload.update({'message_id': msg.suuid})
+        return JsonResponse(payload, status=code)
 
-    msg = SMSMessage.create_mo_from_payload(payload)
+    try:
+        payload = jsonloads(request.body)[
+            'inboundSMSMessageNotification']['inboundSMSMessage']
+
+        msg = SMSMessage.create_mo_from_payload(payload)
+    except:
+        return failure(400, "Incorrect JSON payload")
 
     try:
         handle_smsmo(msg)
     except Exception as e:
-        logger.error("Exception in SMS-MO processing #{}".format(msg.suuid))
+        error_text = "Exception in SMS-MO processing #{}".format(msg.suuid)
+        logger.error(error_text)
         logger.exception(e)
-        status = 301
-    else:
-        status = 200
+        return failure(500, error_text, msg)
 
-    return JsonResponse({"UUID": msg.suuid}, status=status)
+    return JsonResponse({'status': 'success',
+                         'message_id': msg.suuid}, status=200)
 
 
 @csrf_exempt
 @require_POST
 def smsdr(request, **options):
 
-    payload = jsonloads(request.body)['deliveryInfoNotification']
+    def failure(code, text, msg=None):
+        payload = {
+            'status': 'error',
+            'reason': text
+        }
+        if msg is not None:
+            payload.update({'message_id': msg.suuid})
+        return JsonResponse(payload, status=code)
 
-    msg = SMSMessage.record_dr_from_payload(payload)
+    try:
+        payload = jsonloads(request.body)['deliveryInfoNotification']
+        msg = SMSMessage.record_dr_from_payload(payload)
+    except:
+        return failure(400, "Incorrect JSON payload")
 
     try:
         handle_smsdr(msg)
     except Exception as e:
-        logger.error("Exception in SMS-DR processing #{}".format(msg.suuid))
+        error_text = "Exception in SMS-DR processing #{}".format(msg.suuid)
+        logger.error(error_text)
         logger.exception(e)
-        status = 301
-    else:
-        status = 200
+        return failure(500, error_text, msg)
 
-    return JsonResponse({"UUID": msg.suuid}, status=status)
+    return JsonResponse({'status': 'success',
+                         'message_id': msg.suuid}, status=200)
