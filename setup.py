@@ -32,7 +32,7 @@ setup(
         'django-forms-bootstrap == 3.0.1',
         'iso8601 == 0.1.11',
         'pytz >= 2015.6',
-        'requests == 2.12.1',
+        'requests == 2.20.0',
         'simplejson == 3.10.0',
         'py3compat >= 0.3',
     ],
