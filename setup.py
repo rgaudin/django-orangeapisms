@@ -28,7 +28,7 @@ setup(
     package_data={'': ['README.rst', 'LICENSE']},
     package_dir={'orangeapisms': 'orangeapisms'},
     install_requires=[
-        'Django == 1.10.3',
+        'Django == 1.11.29',
         'django-forms-bootstrap == 3.0.1',
         'iso8601 == 0.1.11',
         'pytz >= 2015.6',
